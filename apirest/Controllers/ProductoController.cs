@@ -1,10 +1,11 @@
 using Microsoft.AspNetCore.Mvc;
 using apirest.interfaces;
 using apirest.Models;
-using Microsoft.Extensions.Configuration;
+using Microsoft.AspNetCore.Authorization;
 
 namespace apirest.Controllers
 {
+    [Authorize]
     [Route("api/[controller]")]
     [ApiController]
     public class ProductoController : ControllerBase

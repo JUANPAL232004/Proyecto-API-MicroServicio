@@ -1,9 +1,10 @@
 using Microsoft.AspNetCore.Mvc;
 using apirest.Interfaces;
 using apirest.Models;
-using Microsoft.AspNetCore.Authentication;
-using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.IdentityModel.Tokens; 
+using System.IdentityModel.Tokens.Jwt; 
 using System.Security.Claims;
+using System.Text; 
 using System.ComponentModel.DataAnnotations;
 
 namespace apirest.Controllers
@@ -13,11 +14,13 @@ namespace apirest.Controllers
     public class AuthController : ControllerBase
     {
         private readonly ILoginRepository _repository;
+        private readonly IConfiguration _config; 
         private readonly ILogger<AuthController> _logger;
 
-        public AuthController(ILoginRepository repository, ILogger<AuthController> logger)
+        public AuthController(ILoginRepository repository, IConfiguration config, ILogger<AuthController> logger)
         {
             _repository = repository;
+            _config = config; 
             _logger = logger;
         }
 
@@ -26,23 +29,20 @@ namespace apirest.Controllers
         {
             var usuario = await _repository.ObtenerPorEmail(model.CorreoElectronico);
 
+            // Verificamos si el usuario existe y si la contraseña coincide con el Hash
             if (usuario == null || !BCrypt.Net.BCrypt.Verify(model.Password, usuario.Password))
             {
                 return Unauthorized(new { mensaje = "Credenciales inválidas" });
             }
 
-            var claims = new List<Claim>
-            {
-                new Claim(ClaimTypes.Name, usuario.NombreUsuario),
-                new Claim(ClaimTypes.Email, usuario.CorreoElectronico),
-                new Claim("UsuarioId", usuario.IdUsuario.ToString())
-            };
+            var token = GenerarToken(usuario);
 
-            var identity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
-
-            await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, new ClaimsPrincipal(identity));
-
-            return Ok(new { mensaje = "Login exitoso", usuario = usuario.NombreUsuario });
+            return Ok(new 
+            { 
+                mensaje = "Login exitoso", 
+                token = token, 
+                usuario = usuario.NombreUsuario 
+            });
         }
 
         [HttpPost("registrar")]
@@ -66,30 +66,59 @@ namespace apirest.Controllers
 
             return StatusCode(500, "Error interno al intentar registrar");
         }
-    } // <-- ESTA LLAVE CIERRA EL CONTROLADOR
 
-    // ESTAS CLASES DEBEN ESTAR FUERA DE LA CLASE CONTROLADORA
-    public class LoginRequest
-    {
-        [Required]
-        [EmailAddress]
-        public required string CorreoElectronico { get; set; }
+        private string GenerarToken(Usuario usuario)
+        {
+            var jwtSettings = _config.GetSection("Jwt");
+            var key = Encoding.UTF8.GetBytes(jwtSettings["Key"]!);
 
-        [Required]
-        public required string Password { get; set; }
+            var claims = new[]
+            {
+                new Claim(ClaimTypes.Name, usuario.NombreUsuario),
+                new Claim(ClaimTypes.Email, usuario.CorreoElectronico),
+                new Claim("UsuarioId", usuario.IdUsuario.ToString())
+            };
+
+            var tokenDescriptor = new SecurityTokenDescriptor
+            {
+                Subject = new ClaimsIdentity(claims),
+                Expires = DateTime.UtcNow.AddHours(8),
+                SigningCredentials = new SigningCredentials(
+                    new SymmetricSecurityKey(key), 
+                    SecurityAlgorithms.HmacSha256Signature),
+                Issuer = jwtSettings["Issuer"],
+                Audience = jwtSettings["Audience"]
+            };
+
+            var tokenHandler = new JwtSecurityTokenHandler();
+            var tokenConfig = tokenHandler.CreateToken(tokenDescriptor);
+            return tokenHandler.WriteToken(tokenConfig);
+        }
     }
 
-    public class RegisterRequest
-    {
-        [Required(ErrorMessage = "El nombre de usuario es obligatorio")]
-        public required string NombreUsuario { get; set; }
+    // --- CLASES DE PETICIÓN (DTOs) ---
 
-        [Required(ErrorMessage = "El correo es obligatorio")]
-        [EmailAddress(ErrorMessage = "Formato de correo inválido")]
-        public required string CorreoElectronico { get; set; }
+        public class LoginRequest
+        {
+            [Required(ErrorMessage = "El correo es obligatorio")]
+            [EmailAddress]
+            public required string CorreoElectronico { get; set; }
 
-        [Required(ErrorMessage = "La contraseña es obligatoria")]
-        [MinLength(8, ErrorMessage = "La contraseña debe tener al menos 8 caracteres")]
-        public required string Password { get; set; }
-    }
-} 
+            [Required(ErrorMessage = "La contraseña es obligatoria")]
+            public required string Password { get; set; }
+        }
+
+        public class RegisterRequest
+        {
+            [Required(ErrorMessage = "El nombre de usuario es obligatorio")]
+            public required string NombreUsuario { get; set; }
+
+            [Required(ErrorMessage = "El correo es obligatorio")]
+            [EmailAddress(ErrorMessage = "Formato de correo inválido")]
+            public required string CorreoElectronico { get; set; }
+
+            [Required(ErrorMessage = "La contraseña es obligatoria")]
+            [MinLength(8, ErrorMessage = "La contraseña debe tener al menos 8 caracteres")]
+            public required string Password { get; set; }
+        }
+}
