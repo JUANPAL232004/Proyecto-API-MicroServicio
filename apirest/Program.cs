@@ -1,4 +1,5 @@
 using apirest.interfaces;
+using apirest.Interfaces;
 using apirest.Repositories;
 using Microsoft.AspNetCore.Authentication.Cookies;
 
@@ -11,6 +12,7 @@ builder.Services.AddSwaggerGen();
 builder.Services.AddScoped<IUsuarioRepository, UsuarioRepository>();
 builder.Services.AddScoped<IEstadoRepository, EstadoRepository>();
 builder.Services.AddScoped<IProductoRepository, ProductoRepository>();
+builder.Services.AddScoped<ILoginRepository, LoginRepository>();
 
 builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
     .AddCookie(options =>
