@@ -47,6 +47,10 @@ input {
     outline: none;
 }
 
+input:focus {
+    border-color: #007bff;
+}
+
 .btn-save {
     grid-column: 1 / -1;
     background: #28a745;
@@ -148,43 +152,4 @@ tr:hover {
 #paginacion-controles button:disabled {
     opacity: 0.5;
     cursor: not-allowed;
-}
-
-/* Cuando haces clic o pasas el mouse, se activa el borde */
-.input-inline:hover, .input-inline:focus {
-    border: 1px solid #007bff;
-    background-color: white;
-    border-radius: 4px;
-}
-
-.btn-save-check {
-    background-color: #28a745;
-    color: white;
-    border: none;
-    padding: 5px 10px;
-    border-radius: 4px;
-    cursor: pointer;
-    font-size: 16px;
-}
-
-.btn-save-check:hover { background-color: #218838; }
-
-.input-inline {
-    width: 100%;
-    border: 1px solid transparent;
-    background: transparent;
-    padding: 4px;
-    font-family: inherit;
-    font-size: inherit;
-}
-.input-inline:focus {
-    border: 1px solid #007bff;
-    background: white;
-    outline: none;
-    border-radius: 4px;
-}
-/* Animación de guardado */
-.fila-guardada {
-    transition: background-color 0.5s;
-    background-color: #d4edda !important;
 }

@@ -68,25 +68,31 @@ function renderizarPagina(pagina) {
     const bloquePagina = listaCompleta.slice(inicio, fin);
 
     bloquePagina.forEach(p => {
-        const tr = document.createElement('tr');
-        tr.id = `fila-${p.idProducto}`;
+    const tr = document.createElement('tr');
+    tr.id = `fila-${p.idProducto}`;
+    
+    // Mostramos el NombreEstado como texto y el IdEstado oculto para las actualizaciones
+    tr.innerHTML = `
+        <td>${p.idProducto}</td>
+        <td><input type="text" class="input-inline" id="n-${p.idProducto}" value="${p.nombreProducto || ''}"></td>
+        <td><input type="text" class="input-inline" id="c-${p.idProducto}" value="${p.cliente || ''}"></td>
+        <td><input type="number" class="input-inline" id="p-${p.idProducto}" value="${p.precio}" step="0.01"></td>
+        <td><input type="number" class="input-inline" id="s-${p.idProducto}" value="${p.stock}"></td>
         
-        // Cada celda contiene un input con clase 'input-inline' para estilo CSS
-        tr.innerHTML = `
-            <td>${p.idProducto}</td>
-            <td><input type="text" class="input-inline" id="n-${p.idProducto}" value="${p.nombreProducto || ''}"></td>
-            <td><input type="text" class="input-inline" id="c-${p.idProducto}" value="${p.cliente || ''}"></td>
-            <td><input type="number" class="input-inline" id="p-${p.idProducto}" value="${p.precio}" step="0.01"></td>
-            <td><input type="number" class="input-inline" id="s-${p.idProducto}" value="${p.stock}"></td>
-            <td><input type="number" class="input-inline" id="e-${p.idProducto}" value="${p.idEstado}"></td>
-            <td><small>${p.fecha ? new Date(p.fecha).toLocaleDateString() : 'N/A'}</small></td>
-            <td>
-                <button class="btn-actualizar" onclick="guardarCambiosInline(${p.idProducto})">Actualizar</button>
-                <button class="btn-delete" onclick="eliminarProducto(${p.idProducto})">Eliminar</button>
-            </td>
-        `;
-        tbody.appendChild(tr);
-    });
+        <td>
+    <input type="hidden" id="e-${p.idProducto}" value="${p.idEstado}">
+    <span class="badge-estado" style="font-weight: bold; color: #007bff;">
+        ${p.nombreEstado || "Cargando..."} 
+    </span>
+</td>
+        <td><small>${p.fecha ? new Date(p.fecha).toLocaleDateString() : 'N/A'}</small></td>
+        <td>
+            <button class="btn-actualizar" onclick="guardarCambiosInline(${p.idProducto})">Actualizar</button>
+            <button class="btn-delete" onclick="eliminarProducto(${p.idProducto})">Eliminar</button>
+        </td>
+    `;
+    tbody.appendChild(tr);
+});
     actualizarControlesPaginacion();
 }
 

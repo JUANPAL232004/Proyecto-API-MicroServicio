@@ -22,6 +22,8 @@ namespace apirest.Models
 
         public int IdEstado { get; set; }
 
+        public string? NombreEstado { get; set; }
+        
         [DataType(DataType.DateTime)]
         public DateTime Fecha { get; set; } = DateTime.Now;
     }
