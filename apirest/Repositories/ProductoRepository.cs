@@ -1,5 +1,5 @@
 using Microsoft.Data.SqlClient;
-using apirest.models;
+using apirest.Models;
 using apirest.interfaces;
 using Microsoft.Extensions.Configuration;
 
@@ -42,6 +42,69 @@ namespace apirest.Repositories
                 }
             }
             return lista;
+        }
+
+        public async Task<bool> crear(Producto producto)
+        {
+            const string query = @"INSERT INTO [dbo].[Producto] (NombreProducto, Cliente, Precio, Stock, IdEstado, Fecha) 
+                           VALUES (@Nombre, @Cliente, @Precio, @Stock, @IdEstado, @Fecha)";
+            using (var conn = new SqlConnection(_connectionString))
+            {
+                await conn.OpenAsync();
+                using (var cmd = new SqlCommand(query, conn))
+                {
+                    cmd.Parameters.AddWithValue("@Nombre", producto.NombreProducto);
+                    cmd.Parameters.AddWithValue("@Cliente", producto.Cliente);
+                    cmd.Parameters.AddWithValue("@Precio", producto.Precio);
+                    cmd.Parameters.AddWithValue("@Stock", producto.Stock);
+                    cmd.Parameters.AddWithValue("@IdEstado", producto.IdEstado);
+                    cmd.Parameters.AddWithValue("@Fecha", DateTime.Now);
+
+                    await cmd.ExecuteNonQueryAsync();
+                    return true;
+                }
+            }
+        }
+        public async Task<bool> eliminar(int id)
+        {
+            const string query = @"DELETE FROM [dbo].[Producto] WHERE IdProducto = @Id";
+            using (var conn = new SqlConnection(_connectionString))
+            {
+                await conn.OpenAsync();
+                using (var cmd = new SqlCommand(query, conn))
+                {
+                    cmd.Parameters.AddWithValue("@Id", id);
+
+                    // ExecuteNonQuery devuelve el número de filas eliminadas.
+                    int filasAfectadas = await cmd.ExecuteNonQueryAsync();
+                    
+                    // Si es mayor a 0, significa que sí encontró el producto y borra este dato.
+                    return filasAfectadas > 0;
+                }
+            }
+        }
+        public async Task<bool> actualizar(Producto producto)
+        {
+            const string query = @"UPDATE [dbo].[Producto] SET SET NombreProducto = @Nombre, 
+                               Precio = @Precio, 
+                               Stock = @Stock, 
+                               IdEstado = @IdEstado
+                               WHERE IdProducto = @Id";
+            using (var conn = new SqlConnection(_connectionString))
+            {
+                await conn.OpenAsync();
+                using (var cmd = new SqlCommand(query, conn))
+                {
+                    cmd.Parameters.AddWithValue("@Id", producto.IdProducto);
+                    cmd.Parameters.AddWithValue("@Nombre", producto.NombreProducto);
+                    cmd.Parameters.AddWithValue("@Precio", producto.Precio);
+                    cmd.Parameters.AddWithValue("@Stock", producto.Stock);
+                    cmd.Parameters.AddWithValue("@IdEstado", producto.IdEstado);
+
+                    int filasAfectadas = await cmd.ExecuteNonQueryAsync();
+                    return filasAfectadas > 0;
+                }
+            }
         }
     }
 }

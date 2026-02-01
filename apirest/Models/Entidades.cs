@@ -4,7 +4,7 @@ using System.Data;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace apirest.models
+namespace apirest.Models
 {
     public class Producto
     {

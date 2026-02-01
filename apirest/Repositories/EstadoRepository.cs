@@ -1,5 +1,5 @@
 using Microsoft.Data.SqlClient;
-using apirest.models;
+using apirest.Models;
 using apirest.interfaces;
 using Microsoft.Extensions.Configuration;
 

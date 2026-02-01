@@ -2,12 +2,12 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using apirest.models;
+using apirest.Models;
 
 namespace apirest.interfaces
 {
-    public interface IEstadoRepository
+    public interface IUsuarioRepository
     {   
-        Task<IEnumerable<Estado>> ObtenerTodos();
+        Task<IEnumerable<Usuario>> ObtenerTodos();
     }
 }
