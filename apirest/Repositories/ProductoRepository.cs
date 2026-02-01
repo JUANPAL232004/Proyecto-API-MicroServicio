@@ -48,6 +48,7 @@ namespace apirest.Repositories
             return lista;
         }
 
+
         public async Task<Producto?> ObtenerPorId(int id)
         {
             const string query = @"

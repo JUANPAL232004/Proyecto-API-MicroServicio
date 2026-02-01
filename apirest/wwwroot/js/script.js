@@ -9,6 +9,12 @@ let listaCompleta = [];
 document.addEventListener('DOMContentLoaded', () => {
     if (window.location.pathname.includes('productos.html')) {
         cargarProductos();
+        
+        // --- NUEVA LÓGICA DE BÚSQUEDA ---
+        const inputBusqueda = document.getElementById('busqueda');
+        if (inputBusqueda) {
+            inputBusqueda.addEventListener('input', filtrarProductos);
+        }
     }
     
     const loginForm = document.getElementById('login-form');
@@ -65,18 +71,18 @@ async function cargarProductos() {
 }
 
 // Función para renderizar solo una parte de la lista (Límite de 20)
-function mostrarPagina(pagina) {
+function mostrarPagina(pagina, datos = listaCompleta) {
     paginaActual = pagina;
     const tbody = document.getElementById('tabla-productos');
     if (!tbody) return;
 
-    // LIMPIAMOS LA TABLA para que no se acumulen los datos
     tbody.innerHTML = '';
 
-    // Lógica de recorte de array para 20 elementos
     const inicio = (paginaActual - 1) * productosPorPagina;
     const fin = inicio + productosPorPagina;
-    const productosAMostrar = listaCompleta.slice(inicio, fin);
+    
+    // Usamos 'datos' en lugar de 'listaCompleta' directamente
+    const productosAMostrar = datos.slice(inicio, fin);
 
     productosAMostrar.forEach(p => {
         const productoJson = JSON.stringify(p).replace(/"/g, '&quot;');
@@ -87,7 +93,7 @@ function mostrarPagina(pagina) {
                 <td>${p.cliente}</td>
                 <td>$${p.precio}</td>
                 <td>${p.stock}</td>
-                <td>${p.idEstado}</td>
+                <td>${p.nombreEstado}</td>
                 <td>${new Date(p.fecha).toLocaleDateString()}</td>
                 <td>
                     <button class="btn-edit" onclick="prepararEdicion(${productoJson})">Actualizar</button>
@@ -96,7 +102,8 @@ function mostrarPagina(pagina) {
             </tr>`;
     });
 
-    renderizarControlesPaginacion();
+    // Pasamos los datos a los controles para que sepa cuántas páginas hay del filtro
+    renderizarControlesPaginacion(datos);
 }
 
 // Genera los botones de páginas

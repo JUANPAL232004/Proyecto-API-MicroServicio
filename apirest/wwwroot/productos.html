@@ -13,21 +13,13 @@
         </div>
 
         <div class="form-box">
-
-            <div class="search-box" style="margin-bottom: 15px;">
-            <input type="text" id="busqueda" placeholder="🔍 Buscar por nombre o cliente..." 
-                onkeyup="filtrarProductos()" 
-                style="width: 100%; padding: 10px; border-radius: 4px; border: 1px solid #ccc;">
-            </div>
             <h3>Gestión de Producto</h3>
-            
             <input type="hidden" id="prod-id"> 
-
             <input type="text" id="prod-nombre" placeholder="Nombre Producto">
             <input type="text" id="prod-cliente" placeholder="Nombre del Cliente">
             <input type="number" id="prod-precio" placeholder="Precio ($)" step="0.01">
             <input type="number" id="prod-stock" placeholder="Cantidad en Stock">
-            <input type="number" id="prod-estado" placeholder="ID Estado (Ej: 1)">
+            <input type="text" id="prod-estado" placeholder="ID Estado (Ej: 1)">
             
             <button class="btn-save" onclick="guardarProducto()">Guardar Producto</button>
             <button type="button" onclick="limpiarFormulario()" style="background-color: #6c757d; color: white; border: none; padding: 10px; border-radius: 4px; cursor: pointer; margin-top: 5px;">Cancelar / Nuevo</button>
