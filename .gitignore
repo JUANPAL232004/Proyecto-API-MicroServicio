@@ -1,0 +1,9 @@
+# Ignorar carpetas de compilación
+bin/
+obj/
+
+.vscode/
+
+*.user
+*.userosscache
+*.sln.docstates
