@@ -46,6 +46,21 @@ INSERT INTO Usuario (IdUsuario, nombreUsuario, contraseña, CorreoElectronico) V
 GO
 -- Creación procedimiento para insertar los datos
 
+GO
+
+CREATE PROCEDURE sp_CrearProducto
+    @Nombre NVARCHAR(100),
+    @Cliente NVARCHAR(100),
+    @Precio DECIMAL(18,2),
+    @Stock INT,
+    @IdEstado INT
+AS
+BEGIN
+    INSERT INTO [dbo].[Producto] (NombreProducto, Cliente, Precio, Stock, IdEstado, Fecha)
+    VALUES (@Nombre, @Cliente, @Precio, @Stock, @IdEstado, GETDATE());
+
+    SELECT SCOPE_IDENTITY() AS IdNuevo;
+END
 
 --INSERT DE LA TABLA ESTADO, SE VALIDA EL NÚMERO DE ESTADO
 INSERT INTO Estado (idEstado, NombreEstado) VALUES (1, 'Aprobado'), (2, 'En proceso'), (3, 'Rechazado');
@@ -66,19 +81,3 @@ INSERT INTO Producto (NombreProducto, Cliente, Precio, Stock, IdEstado, Fecha) V
 ('Agua Micelar 400ml', 'Supermercados Éxito', 32000.0, 45, 1, '2026-02-16'),
 ('Mascara de Pestañas', 'Beauty Supply Co.', 28000.0, 60, 2, '2026-02-18'),
 ('Exfoliante Corporal Café', 'Natural Spa', 42000.0, 12, 3, '2026-02-20');
-
-GO
-
-CREATE PROCEDURE sp_CrearProducto
-    @Nombre NVARCHAR(100),
-    @Cliente NVARCHAR(100),
-    @Precio DECIMAL(18,2),
-    @Stock INT,
-    @IdEstado INT
-AS
-BEGIN
-    INSERT INTO [dbo].[Producto] (NombreProducto, Cliente, Precio, Stock, IdEstado, Fecha)
-    VALUES (@Nombre, @Cliente, @Precio, @Stock, @IdEstado, GETDATE());
-
-    SELECT SCOPE_IDENTITY() AS IdNuevo;
-END
