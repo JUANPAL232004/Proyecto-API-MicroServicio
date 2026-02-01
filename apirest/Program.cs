@@ -5,7 +5,11 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using apirest.Interfaces;
 
-var builder = WebApplication.CreateBuilder(args);
+var builder = WebApplication.CreateBuilder(new WebApplicationOptions
+{
+    Args = args,
+    WebRootPath = "wwwroot" // Forzamos que busque la carpeta wwwroot
+});
 
 // 1. Configuración de JWT
 var jwtSettings = builder.Configuration.GetSection("Jwt");
@@ -26,7 +30,7 @@ builder.Services.AddAuthentication(options =>
         ValidateIssuerSigningKey = true,
         ValidIssuer = jwtSettings["Issuer"],
         ValidAudience = jwtSettings["Audience"],
-        IssuerSigningKey = new SymmetricSecurityKey(key)
+        IssuerSigningKey = new SymmetricSecurityKey(key) 
     };
 });
 
@@ -41,42 +45,19 @@ builder.Services.AddCors(options =>
 
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddSwaggerGen();
 
-// 3. Swagger con Candado JWT
-builder.Services.AddSwaggerGen(c =>
-{
-    c.SwaggerDoc("v1", new() { Title = "Mi API", Version = "v1" });
-    c.AddSecurityDefinition("Bearer", new Microsoft.OpenApi.Models.OpenApiSecurityScheme
-    {
-        Name = "Authorization",
-        Type = Microsoft.OpenApi.Models.SecuritySchemeType.Http,
-        Scheme = "Bearer",
-        BearerFormat = "JWT",
-        In = Microsoft.OpenApi.Models.ParameterLocation.Header,
-        Description = "Pega el token generado en el login aquí."
-    });
-    c.AddSecurityRequirement(new Microsoft.OpenApi.Models.OpenApiSecurityRequirement
-    {
-        {
-            new Microsoft.OpenApi.Models.OpenApiSecurityScheme
-            {
-                Reference = new Microsoft.OpenApi.Models.OpenApiReference
-                {
-                    Type = Microsoft.OpenApi.Models.ReferenceType.SecurityScheme,
-                    Id = "Bearer"
-                }
-            },
-            new string[] {}
-        }
-    });
-});
-
+// Inyección de Dependencias
 builder.Services.AddScoped<IUsuarioRepository, UsuarioRepository>();
 builder.Services.AddScoped<IEstadoRepository, EstadoRepository>();
 builder.Services.AddScoped<IProductoRepository, ProductoRepository>();
 builder.Services.AddScoped<ILoginRepository, LoginRepository>();
 
+
 var app = builder.Build(); 
+
+app.UseFileServer();
+// --- CONFIGURACIÓN DEL MIDDLEWARE ---
 
 if (app.Environment.IsDevelopment())
 {
@@ -84,12 +65,19 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
+// IMPORTANTE: DefaultFiles y StaticFiles SIEMPRE antes de MapControllers
+app.UseDefaultFiles(); 
+app.UseStaticFiles();
+
+app.UseRouting(); // Agregamos routing explícito
 app.UseCors("AllowAll"); 
-app.UseHttpsRedirection();
 
 app.UseAuthentication(); 
 app.UseAuthorization();  
 
 app.MapControllers();
+
+// Si nada de lo anterior sirve (ej. entras a una ruta que no existe), carga el HTML
+app.MapFallbackToFile("index.html");
 
 app.Run();

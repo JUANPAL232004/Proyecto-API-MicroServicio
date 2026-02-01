@@ -48,6 +48,7 @@ namespace apirest.Controllers
         [HttpPost("registrar")]
         public async Task<IActionResult> Registrar([FromBody] RegisterRequest model)
         {
+            // Tu código aquí ya está perfecto
             var usuarioExistente = await _repository.ObtenerPorEmail(model.CorreoElectronico);
             if (usuarioExistente != null) 
                 return BadRequest(new { mensaje = "El correo ya está registrado" });
@@ -66,7 +67,6 @@ namespace apirest.Controllers
 
             return StatusCode(500, "Error interno al intentar registrar");
         }
-
         private string GenerarToken(Usuario usuario)
         {
             var jwtSettings = _config.GetSection("Jwt");
