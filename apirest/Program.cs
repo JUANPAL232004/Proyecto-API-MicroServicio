@@ -8,10 +8,12 @@ using apirest.Interfaces;
 var builder = WebApplication.CreateBuilder(new WebApplicationOptions
 {
     Args = args,
-    WebRootPath = "wwwroot" // Forzamos que busque la carpeta wwwroot
+    WebRootPath = "wwwroot" 
 });
 
-// 1. Configuración de JWT
+// CONFIGURACIÓN DE SERVICIOS ---
+
+// Configuración de JWT
 var jwtSettings = builder.Configuration.GetSection("Jwt");
 var key = Encoding.UTF8.GetBytes(jwtSettings["Key"]!);
 
@@ -34,7 +36,7 @@ builder.Services.AddAuthentication(options =>
     };
 });
 
-// 2. Configuración de CORS
+// Configuración de CORS 
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowAll",
@@ -53,11 +55,9 @@ builder.Services.AddScoped<IEstadoRepository, EstadoRepository>();
 builder.Services.AddScoped<IProductoRepository, ProductoRepository>();
 builder.Services.AddScoped<ILoginRepository, LoginRepository>();
 
+var app = builder.Build();
 
-var app = builder.Build(); 
-
-app.UseFileServer();
-// --- CONFIGURACIÓN DEL MIDDLEWARE ---
+// CONFIGURACIÓN DEL MIDDLEWARE
 
 if (app.Environment.IsDevelopment())
 {
@@ -65,11 +65,13 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
-// IMPORTANTE: DefaultFiles y StaticFiles SIEMPRE antes de MapControllers
+// Manejo de archivos estáticos (HTML, CSS, JS)
 app.UseDefaultFiles(); 
 app.UseStaticFiles();
 
-app.UseRouting(); // Agregamos routing explícito
+app.UseRouting();
+
+//Permisos web
 app.UseCors("AllowAll"); 
 
 app.UseAuthentication(); 
@@ -77,7 +79,6 @@ app.UseAuthorization();
 
 app.MapControllers();
 
-// Si nada de lo anterior sirve (ej. entras a una ruta que no existe), carga el HTML
 app.MapFallbackToFile("index.html");
 
 app.Run();

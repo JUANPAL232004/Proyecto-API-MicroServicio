@@ -45,27 +45,28 @@ namespace apirest.Controllers
             });
         }
 
-        [HttpPost("registrar")]
+       [HttpPost("registrar")]
         public async Task<IActionResult> Registrar([FromBody] RegisterRequest model)
         {
-            // Tu código aquí ya está perfecto
             var usuarioExistente = await _repository.ObtenerPorEmail(model.CorreoElectronico);
             if (usuarioExistente != null) 
                 return BadRequest(new { mensaje = "El correo ya está registrado" });
-
-            string passwordHash = BCrypt.Net.BCrypt.HashPassword(model.Password);
 
             var nuevoUsuario = new Usuario
             {
                 NombreUsuario = model.NombreUsuario,
                 CorreoElectronico = model.CorreoElectronico,
-                Password = passwordHash
+                Password = BCrypt.Net.BCrypt.HashPassword(model.Password)
             };
 
             bool creado = await _repository.Registrar(nuevoUsuario);
-            if (creado) return Ok(new { mensaje = "Usuario registrado correctamente" });
+            if (creado) 
+            {
+                // En una API real, aquí podrías devolver la URL del nuevo recurso
+                return CreatedAtAction(nameof(Login), new { email = nuevoUsuario.CorreoElectronico }, new { mensaje = "Usuario registrado correctamente" });
+            }
 
-            return StatusCode(500, "Error interno al intentar registrar");
+            return StatusCode(500, new { mensaje = "Error interno al intentar registrar" });
         }
         private string GenerarToken(Usuario usuario)
         {

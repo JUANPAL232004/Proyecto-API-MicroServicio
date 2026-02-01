@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Gestión de Productos</title>
+    <link rel="stylesheet" href="css/Productos.css">
+</head>
+<body>
+    <div class="container">
+        <div class="header-panel">
+            <h2>Panel de Inventario</h2>
+            <button class="btn-logout" onclick="logout()">Cerrar Sesión</button>
+        </div>
+
+        <div class="form-box">
+            <h3>Gestión de Producto</h3>
+            
+            <input type="hidden" id="prod-id"> 
+
+            <input type="text" id="prod-nombre" placeholder="Nombre Producto">
+            <input type="text" id="prod-cliente" placeholder="Nombre del Cliente">
+            <input type="number" id="prod-precio" placeholder="Precio ($)" step="0.01">
+            <input type="number" id="prod-stock" placeholder="Cantidad en Stock">
+            <input type="number" id="prod-estado" placeholder="ID Estado (Ej: 1)">
+            
+            <button class="btn-save" onclick="guardarProducto()">Guardar Producto</button>
+            <button type="button" onclick="limpiarFormulario()" style="background-color: #6c757d; color: white; border: none; padding: 10px; border-radius: 4px; cursor: pointer; margin-top: 5px;">Cancelar / Nuevo</button>
+        </div>
+
+        <table>
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Producto</th>
+                    <th>Cliente</th>
+                    <th>Precio</th>
+                    <th>Stock</th>
+                    <th>Estado</th>
+                    <th>Fecha</th>
+                    <th>Acciones</th>
+                </tr>
+            </thead>
+            <tbody id="tabla-productos"></tbody>
+        </table>
+        <div id="paginacion-controles" class="paginacion-container"></div>
+    </div>
+    <script src="js/script.js"></script>
+</body>
+</html>
