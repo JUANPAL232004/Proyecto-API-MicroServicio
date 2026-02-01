@@ -41,6 +41,8 @@ namespace apirest.Controllers
             if (producto == null) return NotFound($"Producto con ID {id} no encontrado");
             return Ok(producto);
         }
+
+        
         
         [HttpPost]
         public async Task<ActionResult> Create([FromBody] Producto producto)

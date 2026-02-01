@@ -14,5 +14,6 @@ namespace apirest.interfaces
         Task<int> crear(Producto producto);
         Task<bool> eliminar(int id);   
         Task<bool> actualizar(Producto producto);
+        Task<bool> ExisteProducto(string nombre, string cliente);
     }
 }   
