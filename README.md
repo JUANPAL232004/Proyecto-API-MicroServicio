@@ -49,8 +49,8 @@ Para facilitar la revisión técnica, se ha implementado Swagger. Esta herramien
 
 URL de Documentación: http://localhost:5068/swagger
 
-_
-**Cómo probar:**_
+
+_**Cómo probar:**_
 **1.** Use el endpoint de Login para obtener un Token. 2. Haga clic en el botón "Authorize" arriba a la derecha. 3. Pegue el token y podrá ejecutar las peticiones POST, PUT y DELETE.
 
 -- Puntos Clave Implementados
@@ -61,3 +61,9 @@ Relaciones: Consultas con INNER JOIN para obtener nombres de estados.
 Procedimientos Almacenados: Implementados para la creación de registros.
 
 Validaciones: Control de errores y códigos de respuesta HTTP adecuados, rangos, formatos de cada dato.
+
+_**Funcionalidad**_
+**1.** Se debe ingresar por la direccion http://localhost:5068.
+**2.** Se debe registrar un usuario para poder acceder a las funcionalidades.
+**3.** Posteriormente loguearse con los datos previamente registrados.
+**4** Se puede realizar creación, actualización y eliminación de datos.
