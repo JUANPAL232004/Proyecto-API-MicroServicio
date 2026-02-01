@@ -14,12 +14,12 @@ namespace apirest.Controllers
 
         public ProductoController(IProductoRepository repository, ILogger<ProductoController> logger)
         {
-            _repository = repository;
+            _repository = repository ?? throw new ArgumentNullException(nameof(repository));
             _logger = logger;
         }
 
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<Producto>>> Get()
+        public async Task<ActionResult<IEnumerable<Producto>>> InformaciónTodos()
         {
             try 
             {
@@ -28,26 +28,55 @@ namespace apirest.Controllers
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error al obtener los datos de los productos");
-                return StatusCode(500, "Error interno del servidor");
+                _logger.LogError(ex, "Error al obtener productos");
+                return StatusCode(500, "Ocurrió un error en el servidor.");
             }
+        }
+
+        [HttpGet("{id}")] // Falta este endpoint para cumplir con el estándar REST
+        public async Task<ActionResult<Producto>> GetById(int id)
+        {
+            var producto = await _repository.ObtenerPorId(id);
+            if (producto == null) return NotFound($"Producto con ID {id} no encontrado");
+            return Ok(producto);
         }
         
         [HttpPost]
-        public async Task<ActionResult> Post([FromBody] Producto producto)
+        public async Task<ActionResult> Create([FromBody] Producto producto)
         {
-            if (producto == null) return BadRequest("Los datos del producto son nulos");
-            if (string.IsNullOrEmpty(producto.NombreProducto)) return BadRequest("El nombre es obligatorio");
-
+            // Eliminado 
+            if (!ModelState.IsValid) return BadRequest(ModelState); 
+            
             try
             {
-                var id = await _repository.crear(producto);
-                return CreatedAtAction(nameof(Get), new { id = id }, producto);
+                var IdCreado = await _repository.crear(producto);
+                producto.IdProducto = IdCreado;
+                return CreatedAtAction(nameof(GetById), new { id = IdCreado }, producto);
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error al crear producto");
-                return StatusCode(500, "Error al guardar en la base de datos");
+                return StatusCode(500, "Error al procesar la solicitud.");
+            }
+        }
+
+        [HttpPut("{id}")] // Eliminado 
+        public async Task<ActionResult> Update(int id, [FromBody] Producto producto)
+        {
+            if (id != producto.IdProducto) return BadRequest("El ID del cuerpo no coincide con el de la URL");
+            if (!ModelState.IsValid) return BadRequest(ModelState);
+
+            try
+            {
+                var actualizado = await _repository.actualizar(producto);
+                if (!actualizado) return NotFound();
+
+                return NoContent(); 
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error al actualizar");
+                return StatusCode(500, "Error interno.");
             }
         }
 
@@ -57,43 +86,14 @@ namespace apirest.Controllers
             try
             {
                 var eliminado = await _repository.eliminar(id);
-
-                if (!eliminado)
-                {
-                    // Si la respuesta es falsa devuelve el mensaje.
-                    return NotFound($"No se encontró el producto con ID {id}");
-                }
+                if (!eliminado) return NotFound();
 
                 return Ok(new { mensaje = "Producto eliminado correctamente" });
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error al eliminar el producto");
-                return StatusCode(500, "Error interno al intentar eliminar");
-            }
-
-        }
-         [HttpPut]
-        public async Task<ActionResult> Put([FromBody] Producto producto)
-        {
-            if (producto == null) return BadRequest("Los datos del producto son nulos");
-            if (string.IsNullOrEmpty(producto.NombreProducto)) return BadRequest("El nombre es obligatorio");
-
-            try
-            {
-                var actualizado = await _repository.actualizar(producto);
-                if (!actualizado)
-                {
-                    return NotFound($"No se encontró el producto con ID {producto.IdProducto}");
-                }
-
-                return Ok(new { mensaje = "Producto actualizado correctamente" });
-            }
-            
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error al crear producto");
-                return StatusCode(500, "Error al guardar en la base de datos");
+                _logger.LogError(ex, "Error al eliminar");
+                return StatusCode(500, "Error interno.");
             }
         }
     }

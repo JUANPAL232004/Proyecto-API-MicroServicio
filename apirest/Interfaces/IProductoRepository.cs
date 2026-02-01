@@ -10,7 +10,8 @@ namespace apirest.interfaces
     public interface IProductoRepository
     {
         Task<IEnumerable<Producto>> ObtenerTodos();
-        Task<bool> crear(Producto producto);
+        Task<Producto?> ObtenerPorId(int id);
+        Task<int> crear(Producto producto);
         Task<bool> eliminar(int id);   
         Task<bool> actualizar(Producto producto);
     }

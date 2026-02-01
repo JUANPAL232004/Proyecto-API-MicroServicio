@@ -1,7 +1,6 @@
 using Microsoft.Data.SqlClient;
 using apirest.Models;
 using apirest.interfaces;
-using Microsoft.Extensions.Configuration;
 
 namespace apirest.Repositories
 {
@@ -44,24 +43,55 @@ namespace apirest.Repositories
             return lista;
         }
 
-        public async Task<bool> crear(Producto producto)
+        public async Task<Producto?> ObtenerPorId(int id)
         {
-            const string query = @"INSERT INTO [dbo].[Producto] (NombreProducto, Cliente, Precio, Stock, IdEstado, Fecha) 
-                           VALUES (@Nombre, @Cliente, @Precio, @Stock, @IdEstado, @Fecha)";
+            const string query = "SELECT IdProducto, NombreProducto, Cliente, Precio, Stock, IdEstado, Fecha FROM [dbo].[Producto] WHERE IdProducto = @Id";
             using (var conn = new SqlConnection(_connectionString))
             {
                 await conn.OpenAsync();
                 using (var cmd = new SqlCommand(query, conn))
                 {
+                    cmd.Parameters.AddWithValue("@Id", id);
+                    using (var reader = await cmd.ExecuteReaderAsync())
+                    {
+                        if (await reader.ReadAsync())
+                        {
+                            return new Producto
+                            {
+                                IdProducto = reader.GetInt32(0),
+                                NombreProducto = reader.IsDBNull(1) ? string.Empty : reader.GetString(1),
+                                Cliente = reader.IsDBNull(2) ? string.Empty : reader.GetString(2),
+                                Precio = reader.GetDecimal(3),
+                                Stock = reader.GetInt32(4),
+                                IdEstado = reader.GetInt32(5),
+                                Fecha = reader.GetDateTime(6)
+                            };
+                        }
+                    }
+                }
+            }
+            return null;
+        }
+
+        public async Task<int> crear(Producto producto)
+        {   
+            using (var conn = new SqlConnection(_connectionString))
+            {
+                await conn.OpenAsync();
+                
+                //consulta de el procedimiento almacenado para insert de productos
+                using (var cmd = new SqlCommand("sp_CrearProducto", conn))
+                {
+                    cmd.CommandType = System.Data.CommandType.StoredProcedure; 
+                    
                     cmd.Parameters.AddWithValue("@Nombre", producto.NombreProducto);
                     cmd.Parameters.AddWithValue("@Cliente", producto.Cliente);
                     cmd.Parameters.AddWithValue("@Precio", producto.Precio);
                     cmd.Parameters.AddWithValue("@Stock", producto.Stock);
                     cmd.Parameters.AddWithValue("@IdEstado", producto.IdEstado);
-                    cmd.Parameters.AddWithValue("@Fecha", DateTime.Now);
 
-                    await cmd.ExecuteNonQueryAsync();
-                    return true;
+                    var resultado = await cmd.ExecuteScalarAsync();
+                    return Convert.ToInt32(resultado);
                 }
             }
         }
@@ -85,7 +115,7 @@ namespace apirest.Repositories
         }
         public async Task<bool> actualizar(Producto producto)
         {
-            const string query = @"UPDATE [dbo].[Producto] SET SET NombreProducto = @Nombre, 
+            const string query = @"UPDATE [dbo].[Producto] SET NombreProducto = @Nombre, 
                                Precio = @Precio, 
                                Stock = @Stock, 
                                IdEstado = @IdEstado
