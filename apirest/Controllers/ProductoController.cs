@@ -1,6 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
-using apirest.interfaces;
-using apirest.Models;
+using apirest.Interfaces; // Interfaz del Servicio
+using apirest.DTOs;       // Tus DTOs
 using Microsoft.AspNetCore.Authorization;
 
 namespace apirest.Controllers
@@ -10,21 +10,23 @@ namespace apirest.Controllers
     [ApiController]
     public class ProductoController : ControllerBase
     {
-        private readonly IProductoRepository _repository;
+        // 1. Inyectamos IProductoService (YA NO IProductoRepository)
+        private readonly IProductoService _service;
         private readonly ILogger<ProductoController> _logger;
 
-        public ProductoController(IProductoRepository repository, ILogger<ProductoController> logger)
+        public ProductoController(IProductoService service, ILogger<ProductoController> logger)
         {
-            _repository = repository ?? throw new ArgumentNullException(nameof(repository));
+            _service = service;
             _logger = logger;
         }
 
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<Producto>>> InformaciónTodos()
+        public async Task<ActionResult<IEnumerable<ProductoResponse>>> InformaciónTodos()
         {
             try 
             {
-                var productos = await _repository.ObtenerTodos();
+                // 2. Llamamos al servicio y recibimos DTOs
+                var productos = await _service.ObtenerTodos();
                 return Ok(productos);
             }
             catch (Exception ex)
@@ -34,27 +36,26 @@ namespace apirest.Controllers
             }
         }
 
-        [HttpGet("{id}")] // Falta este endpoint para cumplir con el estándar REST
-        public async Task<ActionResult<Producto>> GetById(int id)
+        [HttpGet("{id}")]
+        public async Task<ActionResult<ProductoResponse>> GetById(int id)
         {
-            var producto = await _repository.ObtenerPorId(id);
+            var producto = await _service.ObtenerPorId(id);
             if (producto == null) return NotFound($"Producto con ID {id} no encontrado");
             return Ok(producto);
         }
 
-        
-        
         [HttpPost]
-        public async Task<ActionResult> Create([FromBody] Producto producto)
+        public async Task<ActionResult> Create([FromBody] ProductoCreate dto) // Usamos DTO
         {
-            // Eliminado 
-            if (!ModelState.IsValid) return BadRequest(ModelState); 
-            
             try
             {
-                var IdCreado = await _repository.crear(producto);
-                producto.IdProducto = IdCreado;
-                return CreatedAtAction(nameof(GetById), new { id = IdCreado }, producto);
+                // 3. El servicio valida y mapea internamente
+                var idCreado = await _service.CrearNuevoProducto(dto);
+                return CreatedAtAction(nameof(GetById), new { id = idCreado }, new { id = idCreado, mensaje = "Creado" });
+            }
+            catch (ArgumentException ex) // Capturamos validaciones del Service
+            {
+                return BadRequest(new { error = ex.Message });
             }
             catch (Exception ex)
             {
@@ -63,18 +64,19 @@ namespace apirest.Controllers
             }
         }
 
-        [HttpPut("{id}")] // Eliminado 
-        public async Task<ActionResult> Update(int id, [FromBody] Producto producto)
+        [HttpPut("{id}")]
+        public async Task<ActionResult> Update(int id, [FromBody] ProductoCreate dto) // Usamos DTO
         {
-            if (id != producto.IdProducto) return BadRequest("El ID del cuerpo no coincide con el de la URL");
-            if (!ModelState.IsValid) return BadRequest(ModelState);
-
             try
             {
-                var actualizado = await _repository.actualizar(producto);
+                var actualizado = await _service.Actualizar(id, dto);
                 if (!actualizado) return NotFound();
 
-                return NoContent(); 
+                return Ok(new { mensaje = "Actualizado correctamente" });
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(new { error = ex.Message });
             }
             catch (Exception ex)
             {
@@ -88,7 +90,7 @@ namespace apirest.Controllers
         {
             try
             {
-                var eliminado = await _repository.eliminar(id);
+                var eliminado = await _service.Eliminar(id);
                 if (!eliminado) return NotFound();
 
                 return Ok(new { mensaje = "Producto eliminado correctamente" });

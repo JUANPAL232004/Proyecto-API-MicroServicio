@@ -5,13 +5,9 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using apirest.Interfaces;
 using Microsoft.OpenApi.Models;
+using apirest.Services;
 
-var builder = WebApplication.CreateBuilder(new WebApplicationOptions
-{
-    Args = args,
-    WebRootPath = "wwwroot" 
-});
-
+var builder = WebApplication.CreateBuilder(args);
 // CONFIGURACIÓN DE SERVICIOS ---
 
 // Configuración de JWT
@@ -87,6 +83,8 @@ builder.Services.AddScoped<IEstadoRepository, EstadoRepository>();
 builder.Services.AddScoped<IProductoRepository, ProductoRepository>();
 builder.Services.AddScoped<ILoginRepository, LoginRepository>();
 
+builder.Services.AddScoped<IProductoService, ProductoServices>();
+
 var app = builder.Build();
 
 // CONFIGURACIÓN DEL MIDDLEWARE
@@ -96,10 +94,6 @@ if (app.Environment.IsDevelopment())
     app.UseSwagger();
     app.UseSwaggerUI();
 }
-
-// Manejo de archivos estáticos (HTML, CSS, JS)
-app.UseDefaultFiles(); 
-app.UseStaticFiles();
 
 app.UseRouting();
 
@@ -111,6 +105,5 @@ app.UseAuthorization();
 
 app.MapControllers();
 
-app.MapFallbackToFile("index.html");
 
 app.Run();

@@ -11,8 +11,8 @@ namespace apirest.interfaces
     {
         Task<IEnumerable<Producto>> ObtenerTodos();
         Task<Producto?> ObtenerPorId(int id);
-        Task<int> crear(Producto producto);
-        Task<bool> eliminar(int id);   
-        Task<bool> actualizar(Producto producto);
+        Task<int> Crear(Producto producto);
+        Task<bool> Eliminar(int id);   
+        Task<bool> Actualizar(Producto producto);
     }
 }   

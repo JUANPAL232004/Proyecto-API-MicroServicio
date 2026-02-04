@@ -82,7 +82,7 @@ namespace apirest.Repositories
             return null;
         }
 
-        public async Task<int> crear(Producto producto)
+        public async Task<int> Crear(Producto producto)
         {   
             using (var conn = new SqlConnection(_connectionString))
             {
@@ -104,7 +104,7 @@ namespace apirest.Repositories
                 }
             }
         }
-        public async Task<bool> eliminar(int id)
+        public async Task<bool> Eliminar(int id)
         {
             const string query = @"DELETE FROM [dbo].[Producto] WHERE IdProducto = @Id";
             using (var conn = new SqlConnection(_connectionString))
@@ -122,7 +122,7 @@ namespace apirest.Repositories
                 }
             }
         }
-        public async Task<bool> actualizar(Producto producto)
+        public async Task<bool> Actualizar(Producto producto)
         {
             const string query = @"UPDATE [dbo].[Producto] SET NombreProducto = @Nombre, 
                                Precio = @Precio, 
