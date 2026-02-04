@@ -61,7 +61,7 @@ builder.Services.AddSwaggerGen(c =>
         Description = "Ingrese su token JWT directamente: **_SOLO EL TOKEN_**",
         In = ParameterLocation.Header,
         Type = SecuritySchemeType.Http,
-        Scheme = "bearer", // Palabra clave corregida
+        Scheme = "bearer", 
         BearerFormat = "JWT",
         Reference = new OpenApiReference
         {

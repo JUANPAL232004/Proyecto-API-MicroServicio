@@ -6,7 +6,6 @@ using apirest.Models;
 
 namespace apirest.interfaces
 {
-    //se llama la funcion obtener todos de Productorespository
     public interface IProductoRepository
     {
         Task<IEnumerable<Producto>> ObtenerTodos();

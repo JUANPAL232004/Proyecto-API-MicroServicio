@@ -12,7 +12,7 @@ namespace apirest.DTOs
         public string Cliente { get; set; } = string.Empty;
         public decimal Precio { get; set; }
         public int Stock { get; set; }
-        public string? NombreEstado { get; set; } // Para mostrar "Activo" en lugar de "1"
+        public string? NombreEstado { get; set; }
         public DateTime Fecha { get; set; }
     }
 }

@@ -1,7 +1,7 @@
 using apirest.Models;
-using apirest.interfaces;
 using apirest.DTOs;
 using apirest.Interfaces;
+using apirest.interfaces;
 
 namespace apirest.Services
 {
@@ -24,7 +24,7 @@ namespace apirest.Services
                 Cliente = p.Cliente,
                 Precio = p.Precio,
                 Stock = p.Stock,
-                NombreEstado = p.NombreEstado,
+                NombreEstado = p.NombreEstado, // Viene del JOIN en la consulta realizada
                 Fecha = p.Fecha
             });
         }
@@ -47,33 +47,25 @@ namespace apirest.Services
         }
 
         public async Task<int> CrearNuevoProducto(ProductoCreate request)
-    {
-        // ✅ Validaciones de negocio
-        if (string.IsNullOrWhiteSpace(request.NombreProducto))
-            throw new ArgumentException("El nombre es obligatorio");
-
-        if (request.Precio <= 0)
-            throw new ArgumentException("El precio debe ser mayor a cero");
-
-        // ✅ Convertimos DTO → Model
-        var producto = new Producto
         {
-            NombreProducto = request.NombreProducto,
-            Cliente = request.Cliente,
-            Precio = request.Precio,
-            Stock = request.Stock,
-            IdEstado = request.IdEstado,
-            Fecha = DateTime.UtcNow
-        };
+            ValidarProducto(request);
 
-        // ✅ Guardamos
-        return await _repository.Crear(producto);
-    }
+            var producto = new Producto
+            {
+                NombreProducto = request.NombreProducto,
+                Cliente = request.Cliente,
+                Precio = request.Precio,
+                Stock = request.Stock,
+                IdEstado = request.IdEstado,
+                Fecha = DateTime.UtcNow
+            };
+
+            return await _repository.Crear(producto);
+        }
 
         public async Task<bool> Actualizar(int id, ProductoCreate dto)
         {
-            // ✅ CORREGIDO: Usamos 'dto' que es el parámetro del método
-            if (dto.Precio <= 0) throw new ArgumentException("Precio inválido");
+            ValidarProducto(dto);
 
             var productoExistente = await _repository.ObtenerPorId(id);
             if (productoExistente == null) return false;
@@ -94,6 +86,21 @@ namespace apirest.Services
         public async Task<bool> Eliminar(int id)
         {
             return await _repository.Eliminar(id);
+        }
+
+        private void ValidarProducto(ProductoCreate request)
+        {
+            if (string.IsNullOrWhiteSpace(request.NombreProducto))
+                throw new ArgumentException("El nombre es obligatorio");
+
+            if (request.NombreProducto.Length < 3 || request.NombreProducto.Length > 100)
+                throw new ArgumentException("Nombre demasiado corto o largo");
+
+            if (!System.Text.RegularExpressions.Regex.IsMatch(request.NombreProducto, @"^[a-zA-Z0-9 ]+$"))
+                throw new ArgumentException("No se permiten caracteres especiales en el nombre");
+
+            if (request.Precio <= 0)
+                throw new ArgumentException("El precio debe ser mayor a cero");
         }
     }
 }

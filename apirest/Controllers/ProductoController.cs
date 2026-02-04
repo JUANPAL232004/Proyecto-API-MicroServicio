@@ -10,7 +10,6 @@ namespace apirest.Controllers
     [ApiController]
     public class ProductoController : ControllerBase
     {
-        // 1. Inyectamos IProductoService (YA NO IProductoRepository)
         private readonly IProductoService _service;
         private readonly ILogger<ProductoController> _logger;
 
@@ -25,7 +24,7 @@ namespace apirest.Controllers
         {
             try 
             {
-                // 2. Llamamos al servicio y recibimos DTOs
+                // Se llama el servicio DTOs
                 var productos = await _service.ObtenerTodos();
                 return Ok(productos);
             }
@@ -45,22 +44,16 @@ namespace apirest.Controllers
         }
 
         [HttpPost]
-        public async Task<ActionResult> Create([FromBody] ProductoCreate dto) // Usamos DTO
+        public async Task<IActionResult> Post([FromBody] ProductoCreate dto)
         {
-            try
+            try 
             {
-                // 3. El servicio valida y mapea internamente
-                var idCreado = await _service.CrearNuevoProducto(dto);
-                return CreatedAtAction(nameof(GetById), new { id = idCreado }, new { id = idCreado, mensaje = "Creado" });
-            }
-            catch (ArgumentException ex) // Capturamos validaciones del Service
+                var id = await _service.CrearNuevoProducto(dto);
+                return CreatedAtAction(nameof(GetById), new { id = id }, new { id, mensaje = "Creado con éxito" });  
+                          }
+            catch (ArgumentException ex) 
             {
-                return BadRequest(new { error = ex.Message });
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error al crear producto");
-                return StatusCode(500, "Error al procesar la solicitud.");
+                return BadRequest(new { mensaje = ex.Message });
             }
         }
 

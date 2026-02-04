@@ -52,9 +52,11 @@ namespace apirest.Repositories
         public async Task<Producto?> ObtenerPorId(int id)
         {
             const string query = @"
-            SELECT p.IdProducto, p.NombreProducto, p.Cliente, p.Precio, p.Stock, p.IdEstado, p.Fecha, e.NombreEstado 
-        FROM [dbo].[Producto] p
-            INNER JOIN [dbo].[Estado] e ON p.IdEstado = e.IdEstado";
+                SELECT p.IdProducto, p.NombreProducto, p.Cliente, p.Precio, p.Stock, p.IdEstado, p.Fecha, e.NombreEstado 
+                FROM [dbo].[Producto] p
+                INNER JOIN [dbo].[Estado] e ON p.IdEstado = e.IdEstado
+                WHERE p.IdProducto = @Id"; // Corregido
+
             using (var conn = new SqlConnection(_connectionString))
             {
                 await conn.OpenAsync();
@@ -70,10 +72,11 @@ namespace apirest.Repositories
                                 IdProducto = reader.GetInt32(0),
                                 NombreProducto = reader.IsDBNull(1) ? string.Empty : reader.GetString(1),
                                 Cliente = reader.IsDBNull(2) ? string.Empty : reader.GetString(2),
-                                Precio = reader.GetDecimal(3),
+                                Precio = Convert.ToDecimal(reader.GetValue(3)),
                                 Stock = reader.GetInt32(4),
                                 IdEstado = reader.GetInt32(5),
-                                Fecha = reader.GetDateTime(6)
+                                Fecha = reader.GetDateTime(6),
+                                NombreEstado = reader.IsDBNull(7) ? string.Empty : reader.GetString(7) // Agregado
                             };
                         }
                     }
