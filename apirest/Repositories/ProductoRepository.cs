@@ -18,9 +18,14 @@ namespace apirest.Repositories
         public async Task<IEnumerable<Producto>> GetAll()
         {
             const string sql = @"
-            SELECT p.*, e.NombreEstado
-            FROM [dbo].[Productos] p
-            INNER JOIN [dbo].[Estado] e ON p.IdEstado = e.IdEstado";
+        SELECT 
+        p.IdProducto,
+        p.NombreProducto,
+        p.Precio,
+        e.NombreEstado
+        FROM dbo.Producto p
+        INNER JOIN Estados e ON p.IdEstado = e.IdEstado";
+
 
             using var conn = new SqlConnection(_connectionString);
             return await conn.QueryAsync<Producto>(sql);
@@ -29,45 +34,29 @@ namespace apirest.Repositories
             //Funcion donde se hace la consulta y se asignan las columnas para ser llamado a interfaces
         public async Task<IEnumerable<Producto>> ObtenerTodos()
         {
-            var lista = new List<Producto>();
-            // Agregamos el JOIN y la columna e.NombreEstado
-            const string query = @"
-                SELECT p.IdProducto, p.NombreProducto, p.Cliente, p.Precio, p.Stock, p.IdEstado, p.Fecha, e.NombreEstado 
-                FROM [dbo].[Producto] p
-                INNER JOIN [dbo].[Estado] e ON p.IdEstado = e.IdEstado";            
-            
-            using (var conn = new SqlConnection(_connectionString))
-            {
-                await conn.OpenAsync();
-                using (var cmd = new SqlCommand(query, conn))
-                using (var reader = await cmd.ExecuteReaderAsync())
-                {
-                    while (await reader.ReadAsync())
-                    {
-                        lista.Add(new Producto
-                        {
-                            IdProducto = reader.GetInt32(0),
-                            NombreProducto = reader.IsDBNull(1) ? string.Empty : reader.GetString(1),
-                            Cliente = reader.IsDBNull(2) ? string.Empty : reader.GetString(2),
-                            Precio = Convert.ToDecimal(reader.GetValue(3)), 
-                            Stock = reader.GetInt32(4),
-                            IdEstado = reader.GetInt32(5),
-                            Fecha = reader.GetDateTime(6),
-                            NombreEstado = reader.IsDBNull(7) ? string.Empty : reader.GetString(7)});
-                    }
-                }
-            }
-            return lista;
+            const string sql = @"
+                SELECT 
+                    p.IdProducto,
+                    p.NombreProducto,
+                    p.Cliente,
+                    p.Precio,
+                    p.Stock,
+                    p.IdEstado,
+                    p.Fecha,
+                    e.NombreEstado
+                FROM dbo.Producto p
+                INNER JOIN dbo.Estado e ON p.IdEstado = e.IdEstado";
+
+            using var conn = new SqlConnection(_connectionString);
+            return await conn.QueryAsync<Producto>(sql);
         }
-
-
         public async Task<Producto?> ObtenerPorId(int id)
         {
             const string query = @"
                 SELECT p.IdProducto, p.NombreProducto, p.Cliente, p.Precio, p.Stock, p.IdEstado, p.Fecha, e.NombreEstado 
                 FROM [dbo].[Producto] p
                 INNER JOIN [dbo].[Estado] e ON p.IdEstado = e.IdEstado
-                WHERE p.IdProducto = @Id"; // Corregido
+                WHERE p.IdProducto = @Id"; 
 
             using (var conn = new SqlConnection(_connectionString))
             {

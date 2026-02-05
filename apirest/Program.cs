@@ -8,9 +8,8 @@ using Microsoft.OpenApi.Models;
 using apirest.Services;
 
 var builder = WebApplication.CreateBuilder(args);
-// CONFIGURACIÓN DE SERVICIOS ---
 
-// Configuración de JWT
+// 1. Configuración de JWT
 var jwtSettings = builder.Configuration.GetSection("Jwt");
 var key = Encoding.UTF8.GetBytes(jwtSettings["Key"]!);
 
@@ -33,61 +32,49 @@ builder.Services.AddAuthentication(options =>
     };
 });
 
-// Configuración de CORS 
+// 2. Configuración de CORS (Unificada)
 builder.Services.AddCors(options =>
 {
-    options.AddPolicy("AllowAll",
-        policy => policy.AllowAnyOrigin()
-                        .AllowAnyMethod()
-                        .AllowAnyHeader());
+    options.AddPolicy("PermitirFrontend", policy =>
+    {
+        policy.WithOrigins("http://127.0.0.1:5500", "http://localhost:5500") 
+              .AllowAnyHeader()
+              .AllowAnyMethod();
+    });
 });
 
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 
+// 3. Swagger
 builder.Services.AddSwaggerGen(c =>
 {
-    c.SwaggerDoc("v1", new OpenApiInfo
-    {
-        Title = "API de Productos - Prueba Técnica",
-        Version = "v1",
-        Description = "Documentación de la API para gestión de productos y usuarios."
-    });
-
-    // CONFIGURACIÓN DE SEGURIDAD PARA JWT
+    c.SwaggerDoc("v1", new OpenApiInfo { Title = "API Productos", Version = "v1" });
+    
     var securityScheme = new OpenApiSecurityScheme
     {
-        Name = "JWT Authentication",
-        Description = "Ingrese su token JWT directamente: **_SOLO EL TOKEN_**",
+        Name = "Authorization",
+        Description = "Ingrese: Bearer {token}",
         In = ParameterLocation.Header,
         Type = SecuritySchemeType.Http,
-        Scheme = "bearer", 
+        Scheme = "bearer",
         BearerFormat = "JWT",
-        Reference = new OpenApiReference
-        {
-            Id = "Bearer",
-            Type = ReferenceType.SecurityScheme
-        }
+        Reference = new OpenApiReference { Id = "Bearer", Type = ReferenceType.SecurityScheme }
     };
-
     c.AddSecurityDefinition("Bearer", securityScheme);
-
-    c.AddSecurityRequirement(new OpenApiSecurityRequirement
-    {
-        { securityScheme, new string[] { } }
-    });
+    c.AddSecurityRequirement(new OpenApiSecurityRequirement { { securityScheme, Array.Empty<string>() } });
 });
-// Inyección de Dependencias
+
+// 4. Inyección de Dependencias
 builder.Services.AddScoped<IUsuarioRepository, UsuarioRepository>();
 builder.Services.AddScoped<IEstadoRepository, EstadoRepository>();
 builder.Services.AddScoped<IProductoRepository, ProductoRepository>();
 builder.Services.AddScoped<ILoginRepository, LoginRepository>();
-
 builder.Services.AddScoped<IProductoService, ProductoServices>();
 
 var app = builder.Build();
 
-// CONFIGURACIÓN DEL MIDDLEWARE
+// --- MIDDLEWARE (EL ORDEN IMPORTA) ---
 
 if (app.Environment.IsDevelopment())
 {
@@ -95,15 +82,15 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
+// 1. CORS debe ir antes que Routing y Auth
+app.UseCors("PermitirFrontend"); 
+
 app.UseRouting();
 
-//Permisos web
-app.UseCors("AllowAll"); 
-
+// 2. Autenticación SIEMPRE antes que Autorización
 app.UseAuthentication(); 
 app.UseAuthorization();  
 
 app.MapControllers();
-
 
 app.Run();

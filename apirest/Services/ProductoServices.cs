@@ -14,17 +14,11 @@ namespace apirest.Services
             _repository = repository;
         }
 
-        public async Task<IEnumerable<ProductoResponse>> ObtenerTodos()
+        public async Task<IEnumerable<Producto>> ObtenerTodos()
         {
-            var productos = await _repository.GetAll(); // Esto trae datos de la DB
-            
-            return productos.Select(p => new ProductoResponse {
-                IdProducto = p.IdProducto,
-                NombreProducto = p.NombreProducto,
-                Precio = p.Precio,
-                NombreEstado = p.NombreEstado 
-            });
+            return await _repository.ObtenerTodos();
         }
+    
 
         public async Task<ProductoResponse?> ObtenerPorId(int id)
         {

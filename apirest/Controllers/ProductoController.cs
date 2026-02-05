@@ -19,20 +19,12 @@ namespace apirest.Controllers
             _logger = logger;
         }
 
+
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<ProductoResponse>>> InformaciónTodos()
+        public async Task<IActionResult> Get()
         {
-            try 
-            {
-                // Se llama el servicio DTOs
-                var productos = await _service.ObtenerTodos();
-                return Ok(productos);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error al obtener productos");
-                return StatusCode(500, "Ocurrió un error en el servidor.");
-            }
+            var productos = await _service.ObtenerTodos();
+            return Ok(productos);
         }
 
         [HttpGet("{id}")]
@@ -58,7 +50,7 @@ namespace apirest.Controllers
         }
 
         [HttpPut("{id}")]
-        public async Task<ActionResult> Update(int id, [FromBody] ProductoCreate dto) // Usamos DTO
+        public async Task<ActionResult> Update(int id, [FromBody] ProductoCreate dto)
         {
             try
             {
