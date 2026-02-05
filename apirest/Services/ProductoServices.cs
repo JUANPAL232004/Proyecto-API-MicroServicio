@@ -16,16 +16,13 @@ namespace apirest.Services
 
         public async Task<IEnumerable<ProductoResponse>> ObtenerTodos()
         {
-            var productos = await _repository.ObtenerTodos();
-            return productos.Select(p => new ProductoResponse
-            {
+            var productos = await _repository.GetAll(); // Esto trae datos de la DB
+            
+            return productos.Select(p => new ProductoResponse {
                 IdProducto = p.IdProducto,
                 NombreProducto = p.NombreProducto,
-                Cliente = p.Cliente,
                 Precio = p.Precio,
-                Stock = p.Stock,
-                NombreEstado = p.NombreEstado, // Viene del JOIN en la consulta realizada
-                Fecha = p.Fecha
+                NombreEstado = p.NombreEstado 
             });
         }
 

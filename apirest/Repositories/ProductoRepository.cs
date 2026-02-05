@@ -1,6 +1,7 @@
 using Microsoft.Data.SqlClient;
 using apirest.Models;
 using apirest.interfaces;
+using Dapper;
 
 namespace apirest.Repositories
 {
@@ -12,6 +13,17 @@ namespace apirest.Repositories
         {
             // Se obtiene la cadena desde appsettings.json
             _connectionString = configuration.GetConnectionString("cadenaConexionSqlServer")!;
+        }
+
+        public async Task<IEnumerable<Producto>> GetAll()
+        {
+            const string sql = @"
+            SELECT p.*, e.NombreEstado
+            FROM [dbo].[Productos] p
+            INNER JOIN [dbo].[Estado] e ON p.IdEstado = e.IdEstado";
+
+            using var conn = new SqlConnection(_connectionString);
+            return await conn.QueryAsync<Producto>(sql);
         }
 
             //Funcion donde se hace la consulta y se asignan las columnas para ser llamado a interfaces

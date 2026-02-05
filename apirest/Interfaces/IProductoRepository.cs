@@ -8,6 +8,7 @@ namespace apirest.interfaces
 {
     public interface IProductoRepository
     {
+        Task<IEnumerable<Producto>> GetAll();
         Task<IEnumerable<Producto>> ObtenerTodos();
         Task<Producto?> ObtenerPorId(int id);
         Task<int> Crear(Producto producto);
